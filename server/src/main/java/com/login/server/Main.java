@@ -25,10 +25,7 @@ public class Main {
         server.start();
     }
 
-    /**
-     * Tạo tài khoản test nếu chưa tồn tại
-     * Xóa method này sau khi đã có dữ liệu thật
-     */
+
     private static void seedTestData() {
         System.out.println("[SEED] Kiểm tra dữ liệu test...");
 
