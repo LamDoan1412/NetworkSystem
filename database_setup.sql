@@ -1,10 +1,3 @@
--- ============================================================
---  NETWORK LOGIN SYSTEM - SQL Server Setup Script
---  Chay file nay trong SQL Server Management Studio (SSMS):
---    File → Open → database_setup.sql → F5 de chay
--- ============================================================
-
--- Tao database
 IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'LoginSystem')
 BEGIN
     CREATE DATABASE LoginSystem;

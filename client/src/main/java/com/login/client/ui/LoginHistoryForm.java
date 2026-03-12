@@ -73,7 +73,7 @@ public class LoginHistoryForm extends JFrame {
         lblFilter.setForeground(Color.WHITE);
         lblFilter.setFont(new Font("Arial", Font.PLAIN, 13));
 
-        cbFilter = new JComboBox<>(new String[]{"Tat ca", "SUCCESS", "FAILED", "LOCKED", "BLOCKED"});
+        cbFilter = new JComboBox<>(new String[]{"Tat ca", "SUCCESS", "FAILED"});
         cbFilter.setPreferredSize(new Dimension(100, 28));
 
         JButton btnRefresh = new JButton("Tai lai");
