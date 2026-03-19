@@ -26,7 +26,7 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("[SERVER] Client kết nối: " + clientIP);
+        System.out.println("[SERVER] Client ket noi: " + clientIP);
 
         try {
             // QUAN TRỌNG: Tạo ObjectOutputStream TRƯỚC ObjectInputStream
@@ -39,9 +39,9 @@ public class ClientHandler implements Runnable {
 
         } catch (EOFException e) {
             // Client đóng kết nối bình thường
-            System.out.println("[SERVER] Client " + clientIP + " đã ngắt kết nối.");
+            System.out.println("[SERVER] Client " + clientIP + " da ngat ket noi.");
         } catch (IOException e) {
-            System.err.println("[SERVER] Lỗi kết nối với " + clientIP + ": " + e.getMessage());
+            System.err.println("[SERVER] Loi ket noi voi " + clientIP + ": " + e.getMessage());
         } finally {
             closeConnection();
         }
