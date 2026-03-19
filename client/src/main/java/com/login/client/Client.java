@@ -64,14 +64,14 @@ public class Client {
             inputStream  = new ObjectInputStream(socket.getInputStream());
 
             connected = true;
-            System.out.println("[CLIENT] Kết nối thành công tới " + host + ":" + port);
+            System.out.println("[CLIENT] Ket noi thanh cong toi " + host + ":" + port);
             return true;
 
         } catch (SocketTimeoutException e) {
-            System.err.println("[CLIENT] Timeout: Server không phản hồi.");
+            System.err.println("[CLIENT] Timeout: Server khong phan hoi.");
         } catch (IOException e) {
-            System.err.println("[CLIENT] Không thể kết nối server: " + e.getMessage());
-            System.err.println("[CLIENT] Hãy kiểm tra server đang chạy chưa?");
+            System.err.println("[CLIENT] Khong the ket noi server: " + e.getMessage());
+            System.err.println("[CLIENT] Hay kiem tra server dang chay chua?");
         }
         return false;
     }
@@ -82,7 +82,7 @@ public class Client {
      */
     public Message login(String username, String password) {
         if (!connected) {
-            return Message.createLoginFailed("Chưa kết nối tới server!");
+            return Message.createLoginFailed("Chua ket noi toi server!");
         }
 
         try {
@@ -96,10 +96,10 @@ public class Client {
             return response;
 
         } catch (SocketTimeoutException e) {
-            return Message.createLoginFailed("Server không phản hồi (timeout).");
+            return Message.createLoginFailed("Server khong phan hoi (timeout).");
         } catch (IOException | ClassNotFoundException e) {
             connected = false;
-            return Message.createLoginFailed("Lỗi kết nối: " + e.getMessage());
+            return Message.createLoginFailed("Loi ket noi: " + e.getMessage());
         }
     }
 
