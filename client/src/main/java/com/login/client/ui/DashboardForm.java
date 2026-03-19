@@ -61,12 +61,12 @@ public class DashboardForm extends JFrame {
         JPanel left = new JPanel(new GridLayout(2, 1, 0, 4));
         left.setOpaque(false);
 
-        JLabel lblHello = new JLabel("Xin chao, " + loginInfo.getUsername() + "!");
+        JLabel lblHello = new JLabel( loginInfo.getUsername() );
         lblHello.setFont(new Font("Arial", Font.BOLD, 20));
         lblHello.setForeground(Color.WHITE);
 
         boolean isAdmin = "admin".equalsIgnoreCase(loginInfo.getRole());
-        JLabel lblBadge = new JLabel("  " + (isAdmin ? "ADMIN" : "USER") + "  ");
+        JLabel lblBadge = new JLabel( "VAI TRO:" + ("  " + (isAdmin ? "ADMIN" : "USER") + "  "));
         lblBadge.setFont(new Font("Arial", Font.BOLD, 11));
         lblBadge.setForeground(Color.WHITE);
         lblBadge.setOpaque(true);
