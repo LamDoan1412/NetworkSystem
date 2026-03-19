@@ -31,7 +31,7 @@ public class LoginHistoryForm extends JFrame {
     }
 
     private void initUI() {
-        setTitle("Lich su Dang nhap");
+        setTitle("Lịch sử đăng nhập");
         setSize(900, 550);
         setResizable(false);
         setLocationRelativeTo(null);
@@ -53,7 +53,7 @@ public class LoginHistoryForm extends JFrame {
         p.setBackground(COLOR_PRIMARY);
         p.setBorder(new EmptyBorder(12, 15, 12, 15));
 
-        JLabel title = new JLabel("LICH SU DANG NHAP");
+        JLabel title = new JLabel("LỊCH SỬ ĐĂNG NHẬP");
         title.setFont(new Font("Arial", Font.BOLD, 18));
         title.setForeground(Color.WHITE);
 
@@ -61,7 +61,7 @@ public class LoginHistoryForm extends JFrame {
         JPanel filter = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         filter.setOpaque(false);
 
-        JLabel lblLimit = new JLabel("Hien thi:");
+        JLabel lblLimit = new JLabel("Hiển thị:");
         lblLimit.setForeground(Color.WHITE);
         lblLimit.setFont(new Font("Arial", Font.PLAIN, 13));
 
@@ -69,14 +69,14 @@ public class LoginHistoryForm extends JFrame {
         spLimit.setPreferredSize(new Dimension(70, 28));
         ((JSpinner.DefaultEditor) spLimit.getEditor()).getTextField().setEditable(false);
 
-        JLabel lblFilter = new JLabel("  Loc:");
+        JLabel lblFilter = new JLabel("  Lọc:");
         lblFilter.setForeground(Color.WHITE);
         lblFilter.setFont(new Font("Arial", Font.PLAIN, 13));
 
-        cbFilter = new JComboBox<>(new String[]{"Tat ca", "SUCCESS", "FAILED"});
+        cbFilter = new JComboBox<>(new String[]{"Tất cả", "SUCCESS", "FAILED"});
         cbFilter.setPreferredSize(new Dimension(100, 28));
 
-        JButton btnRefresh = new JButton("Tai lai");
+        JButton btnRefresh = new JButton("Tải lại");
         btnRefresh.setBackground(COLOR_SUCCESS);
         btnRefresh.setForeground(Color.WHITE);
         btnRefresh.setFont(new Font("Arial", Font.BOLD, 12));
@@ -97,7 +97,7 @@ public class LoginHistoryForm extends JFrame {
     }
 
     private JScrollPane buildTable() {
-        String[] columns = {"STT", "Username", "Thoi gian", "Dia chi IP", "Trang thai"};
+        String[] columns = {"STT", "Username", "Thời gian", "Địa chỉ IP", "Trạng thái"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -168,7 +168,7 @@ public class LoginHistoryForm extends JFrame {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         p.setBackground(new Color(240, 242, 245));
 
-        JLabel lblInfo = new JLabel("Tong so ban ghi: 0");
+        JLabel lblInfo = new JLabel("Tổng số bản ghi: 0");
         lblInfo.setFont(new Font("Arial", Font.BOLD, 13));
         lblInfo.setForeground(new Color(52, 73, 94));
 
@@ -226,7 +226,7 @@ public class LoginHistoryForm extends JFrame {
             String status = log[3];
             
             // Lọc theo status nếu không phải "Tat ca"
-            if (!"Tat ca".equals(filterStatus) && !filterStatus.equals(status)) {
+            if (!"Tất cả".equals(filterStatus) && !filterStatus.equals(status)) {
                 continue;
             }
 
@@ -241,6 +241,6 @@ public class LoginHistoryForm extends JFrame {
 
         // Cập nhật footer
         JLabel lblInfo = (JLabel) ((JPanel) getContentPane().getComponent(2)).getComponent(0);
-        lblInfo.setText("Tong so ban ghi: " + (stt - 1));
+        lblInfo.setText("Tổng số bản ghi: " + (stt - 1));
     }
 }

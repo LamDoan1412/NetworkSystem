@@ -62,7 +62,7 @@ public class LoginForm extends JFrame {
         title.setFont(new Font("Arial", Font.BOLD, 16));
         title.setForeground(Color.WHITE);
 
-        lblConnectionStatus = new JLabel("Dang ket noi...", SwingConstants.CENTER);
+        lblConnectionStatus = new JLabel("Đang kết nối...", SwingConstants.CENTER);
         lblConnectionStatus.setFont(new Font("Arial", Font.PLAIN, 11));
         lblConnectionStatus.setForeground(new Color(255, 220, 100));
 
@@ -82,7 +82,7 @@ public class LoginForm extends JFrame {
 
         // Username label
         g.gridy = 0; g.insets = new Insets(0, 0, 4, 0);
-        JLabel lUser = new JLabel("Ten dang nhap:");
+        JLabel lUser = new JLabel("Tên đăng nhập:");
         lUser.setFont(new Font("Arial", Font.BOLD, 13));
         form.add(lUser, g);
 
@@ -94,7 +94,7 @@ public class LoginForm extends JFrame {
 
         // Password label
         g.gridy = 2; g.insets = new Insets(0, 0, 4, 0);
-        JLabel lPass = new JLabel("Mat khau:");
+        JLabel lPass = new JLabel("Mật khẩu:");
         lPass.setFont(new Font("Arial", Font.BOLD, 13));
         form.add(lPass, g);
 
@@ -108,7 +108,7 @@ public class LoginForm extends JFrame {
 
         // Checkbox hien mat khau
         g.gridy = 4; g.insets = new Insets(0, 0, 14, 0);
-        JCheckBox chk = new JCheckBox("Hien mat khau");
+        JCheckBox chk = new JCheckBox("Hiện mật khẩu");
         chk.setFont(new Font("Arial", Font.PLAIN, 12));
         chk.setBackground(Color.WHITE);
         chk.addActionListener(e -> txtPassword.setEchoChar(chk.isSelected() ? '\0' : '\u25CF'));
@@ -116,7 +116,7 @@ public class LoginForm extends JFrame {
 
         // Nut dang nhap
         g.gridy = 5; g.insets = new Insets(0, 0, 8, 0);
-        btnLogin = new JButton("DANG NHAP");
+        btnLogin = new JButton("ĐĂNG NHẬP");
         btnLogin.setBackground(COLOR_PRIMARY);
         btnLogin.setForeground(Color.WHITE);
         btnLogin.setFont(new Font("Arial", Font.BOLD, 14));
@@ -171,11 +171,11 @@ public class LoginForm extends JFrame {
             boolean ok = client.connect();
             SwingUtilities.invokeLater(() -> {
                 if (ok) {
-                    lblConnectionStatus.setText("\u2713 Da ket noi: " + client.getHost() + ":" + client.getPort());
+                    lblConnectionStatus.setText("\u2713 Đã kết nối: " + client.getHost() + ":" + client.getPort());
                     lblConnectionStatus.setForeground(new Color(150, 255, 150));
                     btnLogin.setEnabled(true);
                 } else {
-                    lblConnectionStatus.setText("\u2717 Khong the ket noi server!");
+                    lblConnectionStatus.setText("\u2717 Không thể kết nối server!");
                     lblConnectionStatus.setForeground(new Color(255, 150, 150));
                 }
             });
@@ -219,7 +219,7 @@ public class LoginForm extends JFrame {
                 setFormEnabled(false);
                 break;
             default:
-                showStatus("Phan hoi khong xac dinh!", COLOR_WARNING);
+                showStatus("Phản hồi không xác định !", COLOR_WARNING);
         }
     }
 

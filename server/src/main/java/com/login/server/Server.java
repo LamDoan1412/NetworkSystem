@@ -39,7 +39,7 @@ public class Server {
                 return Integer.parseInt(props.getProperty("server.port", "9999"));
             }
         } catch (Exception e) {
-            System.err.println("[SERVER] Không đọc được port, dùng mặc định 9999");
+            System.err.println("[SERVER] Khong đoc đuoc port, dung mac đinh 9999");
         }
         return 9999;
     }
@@ -57,7 +57,7 @@ public class Server {
 
         // Bước 1: Kiểm tra kết nối DB trước khi mở cổng
         if (!DBConnection.testConnection()) {
-            System.err.println("[SERVER] Không thể kết nối DB → Server dừng lại!");
+            System.err.println("[SERVER] Khong the ket noi DB → Server dung lai!");
             return;
         }
 
@@ -65,15 +65,15 @@ public class Server {
         try {
             serverSocket = new ServerSocket(port);
             running = true;
-            System.out.println("[SERVER] Đang lắng nghe tại port " + port + " ...");
-            System.out.println("[SERVER] Nhấn Ctrl+C để dừng server.");
+            System.out.println("[SERVER] Dang lang nghe tai port " + port + " ...");
+            System.out.println("[SERVER] Nhan Ctrl+C de dung server.");
             System.out.println("-".repeat(50));
 
             // Bước 3: Vòng lặp chấp nhận client
             acceptClients();
 
         } catch (IOException e) {
-            System.err.println("[SERVER] Không thể mở port " + port + ": " + e.getMessage());
+            System.err.println("[SERVER] Khong the mo port " + port + ": " + e.getMessage());
         } finally {
             stop();
         }
@@ -90,7 +90,7 @@ public class Server {
                 threadPool.execute(new ClientHandler(clientSocket));
             } catch (IOException e) {
                 if (running) {
-                    System.err.println("[SERVER] Lỗi chấp nhận kết nối: " + e.getMessage());
+                    System.err.println("[SERVER] Loi chap nhan ket noi: " + e.getMessage());
                 }
             }
         }
@@ -107,8 +107,8 @@ public class Server {
                 serverSocket.close();
             }
         } catch (IOException e) {
-            System.err.println("[SERVER] Lỗi đóng server: " + e.getMessage());
+            System.err.println("[SERVER] Loi dong server: " + e.getMessage());
         }
-        System.out.println("[SERVER] Server đã dừng.");
+        System.out.println("[SERVER] Server dừng lai.");
     }
 }

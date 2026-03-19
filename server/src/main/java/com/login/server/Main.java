@@ -18,7 +18,7 @@ public class Main {
 
         // Hook để dừng server khi Ctrl+C
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("\n[SERVER] Đang tắt server...");
+            System.out.println("\n[SERVER] Đang tat server...");
             server.stop();
         }));
 
@@ -27,20 +27,20 @@ public class Main {
 
 
     private static void seedTestData() {
-        System.out.println("[SEED] Kiểm tra dữ liệu test...");
+        System.out.println("[SEED] Kiem tra du lieu test...");
 
         // Admin account
         if (!UserDAO.userExists("admin")) {
             String hash = PasswordUtil.hash("admin123");
             UserDAO.createUser("admin", hash, "admin");
-            System.out.println("[SEED] Tạo tài khoản admin / admin123");
+            System.out.println("[SEED] Tao tai khoan admin / admin123");
         }
 
         // User account
         if (!UserDAO.userExists("admin1412")) {
             String hash = PasswordUtil.hash("1412");
             UserDAO.createUser("adim1412", hash, "user");
-            System.out.println("[SEED] Tạo tài khoản admin1412 / 1412");
+            System.out.println("[SEED] Tao tai khoan admin1412 / 1412");
         }
 
         System.out.println("[SEED] Xong!");

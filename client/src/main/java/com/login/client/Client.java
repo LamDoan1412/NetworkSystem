@@ -125,9 +125,9 @@ public class Client {
             if (inputStream != null) inputStream.close();
             if (outputStream != null) outputStream.close();
             if (socket != null && !socket.isClosed()) socket.close();
-            System.out.println("[CLIENT] Đã ngắt kết nối.");
+            System.out.println("[CLIENT] Da ngat ket noi.");
         } catch (IOException e) {
-            System.err.println("[CLIENT] Lỗi đóng kết nối: " + e.getMessage());
+            System.err.println("[CLIENT] Loi dong ket noi: " + e.getMessage());
         }
     }
 

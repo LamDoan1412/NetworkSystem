@@ -34,7 +34,7 @@ public class UserManagementForm extends JFrame {
     }
 
     private void initUI() {
-        setTitle("Quan ly Nguoi dung");
+        setTitle("Quản lý người dùng");
         setSize(800, 500);
         setResizable(false);
         setLocationRelativeTo(null);
@@ -56,11 +56,11 @@ public class UserManagementForm extends JFrame {
         p.setBackground(COLOR_PRIMARY);
         p.setBorder(new EmptyBorder(12, 15, 12, 15));
 
-        JLabel title = new JLabel("QUAN LY NGUOI DUNG");
+        JLabel title = new JLabel("QUẢN LÝ NGƯỜI DÙNG");
         title.setFont(new Font("Arial", Font.BOLD, 18));
         title.setForeground(Color.WHITE);
 
-        JButton btnRefresh = new JButton("Tai lai");
+        JButton btnRefresh = new JButton("Tải lại");
         btnRefresh.setBackground(COLOR_SUCCESS);
         btnRefresh.setForeground(Color.WHITE);
         btnRefresh.setFocusPainted(false);
@@ -74,7 +74,7 @@ public class UserManagementForm extends JFrame {
     }
 
     private JScrollPane buildTable() {
-        String[] columns = {"Username", "Role", "Trang thai", "Ngay tao"};
+        String[] columns = {"Username", "Role", "Trạng thái", "Ngày tạo"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -99,10 +99,10 @@ public class UserManagementForm extends JFrame {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         p.setBackground(new Color(240, 242, 245));
 
-        addButton(p, "Them User", COLOR_SUCCESS, e -> addUser());
-        addButton(p, "Khoa/Mo khoa", COLOR_WARNING, e -> toggleStatus());
-        addButton(p, "Doi mat khau", COLOR_PRIMARY, e -> changePasswordUI());
-        addButton(p, "Xoa User", COLOR_DANGER, e -> deleteUser());
+        addButton(p, "Thêm User", COLOR_SUCCESS, e -> addUser());
+        addButton(p, "Khoá/ Mở khoá", COLOR_WARNING, e -> toggleStatus());
+        addButton(p, "Đổi mật khẩu", COLOR_PRIMARY, e -> changePasswordUI());
+        addButton(p, "Xoá User", COLOR_DANGER, e -> deleteUser());
 
         return p;
     }
@@ -181,7 +181,7 @@ public class UserManagementForm extends JFrame {
             stmt.setString(1, username);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Loi cap nhat: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Lỗi cập nhật: " + e.getMessage());
             return false;
         }
     }
@@ -194,7 +194,7 @@ public class UserManagementForm extends JFrame {
             stmt.setString(2, username);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Loi doi mat khau: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Lỗi đổi mật khẩu: " + e.getMessage());
             return false;
         }
     }
@@ -206,7 +206,7 @@ public class UserManagementForm extends JFrame {
             stmt.setString(1, username);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Loi xoa user: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Lỗi xoá user: " + e.getMessage());
             return false;
         }
     }
@@ -235,7 +235,7 @@ public class UserManagementForm extends JFrame {
         panel.add(cbRole);
 
         int result = JOptionPane.showConfirmDialog(this, panel,
-                "Them User moi", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                "Thêm user mới", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
         if (result == JOptionPane.OK_OPTION) {
             String username = txtUser.getText().trim();
@@ -243,18 +243,18 @@ public class UserManagementForm extends JFrame {
             String role = (String) cbRole.getSelectedItem();
 
             if (username.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Vui long nhap day du thong tin!");
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập đủ thông tin");
                 return;
             }
 
             if (userExists(username)) {
-                JOptionPane.showMessageDialog(this, "Username da ton tai!");
+                JOptionPane.showMessageDialog(this, "Username đã tồn tại!");
                 return;
             }
 
             String hash = PasswordUtil.hash(password);
             if (createUserInDB(username, hash, role)) {
-                JOptionPane.showMessageDialog(this, "Them user thanh cong!");
+                JOptionPane.showMessageDialog(this, "Thêm user thành công!");
                 loadUsers();
             }
         }
@@ -263,7 +263,7 @@ public class UserManagementForm extends JFrame {
     private void toggleStatus() {
         int row = table.getSelectedRow();
         if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Vui long chon user!");
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn user");
             return;
         }
 
@@ -271,12 +271,12 @@ public class UserManagementForm extends JFrame {
         String currentStatus = (String) tableModel.getValueAt(row, 2);
 
         int confirm = JOptionPane.showConfirmDialog(this,
-                "Ban muon " + ("Hoat dong".equals(currentStatus) ? "KHOA" : "MO KHOA") + " user '" + username + "'?",
-                "Xac nhan", JOptionPane.YES_NO_OPTION);
+                "Bạn muốn " + ("Hoạt động".equals(currentStatus) ? "KHOÁ" : "MỞ KHOÁ") + " user '" + username + "'?",
+                "Xác nhận", JOptionPane.YES_NO_OPTION);
 
         if (confirm == JOptionPane.YES_OPTION) {
             if (toggleUserStatusInDB(username)) {
-                JOptionPane.showMessageDialog(this, "Cap nhat thanh cong!");
+                JOptionPane.showMessageDialog(this, "Cập nhật thành công");
                 loadUsers();
             }
         }
@@ -285,7 +285,7 @@ public class UserManagementForm extends JFrame {
     private void changePasswordUI() {
         int row = table.getSelectedRow();
         if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Vui long chon user!");
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn user");
             return;
         }
 
@@ -295,31 +295,31 @@ public class UserManagementForm extends JFrame {
         JPasswordField txtConfirm = new JPasswordField(15);
 
         JPanel panel = new JPanel(new GridLayout(2, 2, 10, 10));
-        panel.add(new JLabel("Mat khau moi:"));
+        panel.add(new JLabel("Mật khẩu mới:"));
         panel.add(txtNewPass);
-        panel.add(new JLabel("Xac nhan:"));
+        panel.add(new JLabel("Xác nhận:"));
         panel.add(txtConfirm);
 
         int result = JOptionPane.showConfirmDialog(this, panel,
-                "Doi mat khau cho: " + username, JOptionPane.OK_CANCEL_OPTION);
+                "Đổi mật khẩu cho: " + username, JOptionPane.OK_CANCEL_OPTION);
 
         if (result == JOptionPane.OK_OPTION) {
             String newPass = new String(txtNewPass.getPassword());
             String confirm = new String(txtConfirm.getPassword());
 
             if (newPass.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Mat khau khong duoc de trong!");
+                JOptionPane.showMessageDialog(this, "Mật khẩu không được để trống!");
                 return;
             }
 
             if (!newPass.equals(confirm)) {
-                JOptionPane.showMessageDialog(this, "Mat khau xac nhan khong khop!");
+                JOptionPane.showMessageDialog(this, "Mật khẩu xác nhận không khớp!");
                 return;
             }
 
             String hash = PasswordUtil.hash(newPass);
             if (changePasswordInDB(username, hash)) {
-                JOptionPane.showMessageDialog(this, "Doi mat khau thanh cong!");
+                JOptionPane.showMessageDialog(this, "Đổi mật khâu thành công!");
             }
         }
     }
@@ -327,24 +327,24 @@ public class UserManagementForm extends JFrame {
     private void deleteUser() {
         int row = table.getSelectedRow();
         if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Vui long chon user!");
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn user!");
             return;
         }
 
         String username = (String) tableModel.getValueAt(row, 0);
 
         if ("admin".equals(username)) {
-            JOptionPane.showMessageDialog(this, "Khong the xoa tai khoan admin!");
+            JOptionPane.showMessageDialog(this, "Không thể xoá tài khoản admin!");
             return;
         }
 
         int confirm = JOptionPane.showConfirmDialog(this,
-                "Ban co chac muon XOA user '" + username + "'?\nHanh dong nay khong the hoan tac!",
-                "Canh bao", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                "Bạn có chắc muốn XOÁ user '" + username + "'?\nHành động này không thể hoàn tác!",
+                "Cảnh báo", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
         if (confirm == JOptionPane.YES_OPTION) {
             if (deleteUserFromDB(username)) {
-                JOptionPane.showMessageDialog(this, "Xoa user thanh cong!");
+                JOptionPane.showMessageDialog(this, "Xoá user thành công!");
                 loadUsers();
             }
         }

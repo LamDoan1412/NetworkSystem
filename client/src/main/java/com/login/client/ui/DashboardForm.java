@@ -61,12 +61,12 @@ public class DashboardForm extends JFrame {
         JPanel left = new JPanel(new GridLayout(2, 1, 0, 4));
         left.setOpaque(false);
 
-        JLabel lblHello = new JLabel( loginInfo.getUsername() );
+        JLabel lblHello = new JLabel( " Người dùng: " + loginInfo.getUsername() );
         lblHello.setFont(new Font("Arial", Font.BOLD, 20));
         lblHello.setForeground(Color.WHITE);
 
         boolean isAdmin = "admin".equalsIgnoreCase(loginInfo.getRole());
-        JLabel lblBadge = new JLabel( "VAI TRO:" + ("  " + (isAdmin ? "ADMIN" : "USER") + "  "));
+        JLabel lblBadge = new JLabel( "VAI TRÒ:" + ("  " + (isAdmin ? "ADMIN" : "USER") + "  "));
         lblBadge.setFont(new Font("Arial", Font.BOLD, 11));
         lblBadge.setForeground(Color.WHITE);
         lblBadge.setOpaque(true);
@@ -101,8 +101,8 @@ public class DashboardForm extends JFrame {
         row.setBackground(COLOR_BG);
 
         boolean isAdmin = "admin".equalsIgnoreCase(loginInfo.getRole());
-        addCard(row, "TAI KHOAN",  loginInfo.getUsername(), COLOR_PRIMARY);
-        addCard(row, "QUYEN HAN",  loginInfo.getRole().toUpperCase(),
+        addCard(row, "TÀI KHOẢN",  loginInfo.getUsername(), COLOR_PRIMARY);
+        addCard(row, "QUYỀN HẠN",  loginInfo.getRole().toUpperCase(),
                 isAdmin ? COLOR_PURPLE : COLOR_SUCCESS);
         addCard(row, "SERVER",     "localhost:9999", new Color(22, 160, 133));
         return row;
@@ -135,21 +135,21 @@ public class DashboardForm extends JFrame {
 
         boolean isAdmin = "admin".equalsIgnoreCase(loginInfo.getRole());
 
-        addBtn(grid, "Thong tin he thong", COLOR_PRIMARY,
+        addBtn(grid, "Thông tin hệ thống", COLOR_PRIMARY,
                e -> showSystemInfo());
 
-        addBtn(grid, "Lich su dang nhap", new Color(22, 160, 133),
+        addBtn(grid, "Lịch sử đăng nhập", new Color(22, 160, 133),
                e -> new LoginHistoryForm().setVisible(true));
 
-        JButton btnAdmin = addBtn(grid, "Quan ly nguoi dung", COLOR_PURPLE,
+        JButton btnAdmin = addBtn(grid, "Quản lý người dùng", COLOR_PURPLE,
                e -> new UserManagementForm().setVisible(true));
         if (!isAdmin) {
             btnAdmin.setEnabled(false);
-            btnAdmin.setToolTipText("Chi Admin moi co quyen nay");
+            btnAdmin.setToolTipText("Chỉ Admin mới có quyền này");
             btnAdmin.setBackground(new Color(180, 180, 180));
         }
 
-        addBtn(grid, "Dang xuat", COLOR_DANGER, e -> logout());
+        addBtn(grid, "Đăng xuất", COLOR_DANGER, e -> logout());
 
         return grid;
     }
@@ -181,7 +181,7 @@ public class DashboardForm extends JFrame {
         left.setFont(new Font("Arial", Font.PLAIN, 11));
         left.setForeground(new Color(150, 180, 200));
 
-        JLabel right = new JLabel("Da ket noi  [on]");
+        JLabel right = new JLabel("Đã kết nối  [on]");
         right.setFont(new Font("Arial", Font.BOLD, 11));
         right.setForeground(COLOR_SUCCESS);
 
@@ -197,18 +197,18 @@ public class DashboardForm extends JFrame {
             "OS           : " + System.getProperty("os.name")      + "\n" +
             "Server       : localhost:9999\n"                               +
             "Database     : SQL Server (HOLAD1412\\SQLEXPRESS)\n"           +
-            "Nguoi dung   : " + loginInfo.getUsername()            + "\n" +
-            "Quyen        : " + loginInfo.getRole()                + "\n" +
-            "Thoi gian    : " + LocalDateTime.now()
+            "Người dùng   : " + loginInfo.getUsername()            + "\n" +
+            "Quyền        : " + loginInfo.getRole()                + "\n" +
+            "Thời gian    : " + LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
 
         JOptionPane.showMessageDialog(this, info,
-            "Thong tin he thong", JOptionPane.INFORMATION_MESSAGE);
+            "Thông tin hệ thống", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void logout() {
         int ok = JOptionPane.showConfirmDialog(this,
-            "Ban co chac muon dang xuat?", "Xac nhan",
+            "Bạn có muốn đăng xuất?", "Xác nhận ",
             JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (ok == JOptionPane.YES_OPTION) {
             client.disconnect();
