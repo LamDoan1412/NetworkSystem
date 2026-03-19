@@ -8,7 +8,7 @@ import java.net.Socket;
 /**
  * Thread xử lý từng client kết nối vào server.
  * Mỗi client có 1 ClientHandler riêng → xử lý song song (đa luồng).
- *
+ * <p>
  * Luồng hoạt động:
  *  Client kết nối → Server tạo ClientHandler → đọc Message → xác thực → phản hồi → đóng
  */
@@ -55,7 +55,7 @@ public class ClientHandler implements Runnable {
             try {
                 // Đọc Message từ client
                 Message request = (Message) inputStream.readObject();
-                System.out.println("[SERVER] Nhận từ " + clientIP + ": " + request);
+                System.out.println("[SERVER] Nhan tu " + clientIP + ": " + request);
 
                 Message response = handleMessage(request);
 
@@ -69,7 +69,7 @@ public class ClientHandler implements Runnable {
                 }
 
             } catch (ClassNotFoundException e) {
-                System.err.println("[SERVER] Lỗi deserialize message: " + e.getMessage());
+                System.err.println("[SERVER] Loi deserialize message: " + e.getMessage());
                 break;
             }
         }
@@ -80,7 +80,7 @@ public class ClientHandler implements Runnable {
      */
     private Message handleMessage(Message request) {
         if (request.getType() == null) {
-            return Message.createLoginFailed("Message không hợp lệ!");
+            return Message.createLoginFailed("Message khong hop le!");
         }
 
         switch (request.getType()) {
@@ -93,11 +93,11 @@ public class ClientHandler implements Runnable {
                 );
 
             case LOGOUT:
-                System.out.println("[SERVER] " + clientIP + " đã đăng xuất.");
-                return new Message(Message.Type.LOGOUT, "Đã đăng xuất thành công.");
+                System.out.println("[SERVER] " + clientIP + " da dang xuat.");
+                return new Message(Message.Type.LOGOUT, "Da dang xuat thanh cong.");
 
             default:
-                return Message.createLoginFailed("Loại request không được hỗ trợ.");
+                return Message.createLoginFailed("Loai request khong duoc ho tro.");
         }
     }
 
@@ -109,9 +109,9 @@ public class ClientHandler implements Runnable {
             if (inputStream != null) inputStream.close();
             if (outputStream != null) outputStream.close();
             if (clientSocket != null && !clientSocket.isClosed()) clientSocket.close();
-            System.out.println("[SERVER] Đã đóng kết nối: " + clientIP);
+            System.out.println("[SERVER] Da dong ket noi: " + clientIP);
         } catch (IOException e) {
-            System.err.println("[SERVER] Lỗi đóng kết nối: " + e.getMessage());
+            System.err.println("[SERVER] Loi dong ket noi: " + e.getMessage());
         }
     }
 }
