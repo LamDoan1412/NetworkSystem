@@ -19,7 +19,7 @@ public class DashboardForm extends JFrame {
     private static final Color COLOR_PRIMARY = new Color(41, 128, 185);
     private static final Color COLOR_SUCCESS = new Color(39, 174, 96);
     private static final Color COLOR_DANGER  = new Color(192, 57, 43);
-    private static final Color COLOR_ORANGE  = new Color(230, 126, 34);
+    private static final Color COLOR_ORANGE  = new Color(230, 126, 35);
     private static final Color COLOR_PURPLE  = new Color(142, 68, 173);
     private static final Color COLOR_BG      = new Color(240, 242, 245);
 
@@ -213,25 +213,47 @@ public class DashboardForm extends JFrame {
         JDialog waitDialog = createWaitDialog("Đang gửi yêu cầu tới Server...\nVui lòng chờ admin chấp nhận.");
 
         new Thread(() -> {
-            Message response = client.requestSystemInfo();
+            try {
+                Message response = client.requestSystemInfo();
 
-            SwingUtilities.invokeLater(() -> {
-                waitDialog.dispose();
-
-                if (response.getType() == Message.Type.REQUEST_APPROVED) {
-                    showSystemInfoDialog(response.getMessage());
-                } else if (response.getType() == Message.Type.REQUEST_REJECTED) {
-                    JOptionPane.showMessageDialog(this,
-                            response.getMessage(),
-                            "Bị từ chối",
-                            JOptionPane.WARNING_MESSAGE);
-                }
-            });
+                SwingUtilities.invokeLater(() -> {
+                    waitDialog.dispose();
+                    if (response.getType() == Message.Type.REQUEST_APPROVED) {
+                        showSystemInfoDialog(response.getMessage());
+                    } else if (response.getType() == Message.Type.REQUEST_REJECTED) {
+                        JOptionPane.showMessageDialog(this, response.getMessage(), "Bị từ chối", JOptionPane.WARNING_MESSAGE);
+                    }
+                });
+            } catch (Exception ex) {
+                SwingUtilities.invokeLater(() -> {
+                    waitDialog.dispose();
+                    JOptionPane.showMessageDialog(this, "Lỗi kết nối: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                });
+            }
         }).start();
 
-        waitDialog.setVisible(true);
+        waitDialog.setVisible(true);   // vẫn để ở cuối
     }
+    private void showSystemInfoDialog(String data) {
+        JTextArea textArea = new JTextArea(data);
+        textArea.setEditable(false);
+        textArea.setFont(new Font("Arial", Font.PLAIN, 13));
+        textArea.setBackground(new Color(245, 245, 245));
+        textArea.setBorder(new EmptyBorder(12, 12, 12, 12));
 
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(520, 350));
+
+        JOptionPane.showMessageDialog(
+                this,
+                scrollPane,
+                "Thông tin hệ thống",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
     /**
      * YÊU CẦU xem lịch sử đăng nhập (CẦN APPROVAL)
      */
@@ -284,34 +306,34 @@ public class DashboardForm extends JFrame {
     /**
      * Hiển thị thông tin hệ thống NGẮN GỌN
      */
-    private void showSystemInfoDialog(String data) {
-        // Lọc chỉ lấy thông tin quan trọng
-        StringBuilder info = new StringBuilder();
-        info.append("=== THÔNG TIN HỆ THỐNG ===\n\n");
+    private void showSystemInfo() {
+        String info =
+                "Java version : " + System.getProperty("java.version") + "\n" +
+                        "OS           : " + System.getProperty("os.name")      + "\n" +
+                        "Server       : localhost:9999\n" +
+                        "Database     : SQL Server (HOLAD1412\\SQLEXPRESS)\n" +
+                        "Nguoi dung   : " + loginInfo.getUsername()            + "\n" +
+                        "Quyen        : " + loginInfo.getRole()                + "\n" +
+                        "Thoi gian    : " + LocalDateTime.now()
+                        .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
 
-        for (String line : data.split("\n")) {
-            if (line.contains("Java Version:") ||
-                    line.contains("OS:") ||
-                    line.contains("Max Memory:") ||
-                    line.contains("Used Memory:") ||
-                    line.contains("Available Processors:")) {
-                info.append(line.trim()).append("\n");
-            }
-        }
-
-        JTextArea textArea = new JTextArea(info.toString());
+        JTextArea textArea = new JTextArea(info);
         textArea.setEditable(false);
-        textArea.setFont(new Font("Arial", Font.PLAIN, 13));
+        textArea.setFont(new Font("Consolas", Font.PLAIN, 13));
         textArea.setBackground(new Color(245, 245, 245));
-        textArea.setBorder(new EmptyBorder(12, 12, 12, 12));
+        textArea.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
         JScrollPane scrollPane = new JScrollPane(textArea);
-        scrollPane.setPreferredSize(new Dimension(420, 220));
+        scrollPane.setBorder(null);
+        scrollPane.setPreferredSize(new Dimension(400, 250));
 
-        JOptionPane.showMessageDialog(this, scrollPane,
-                "Thông tin hệ thống", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(
+                this,
+                scrollPane,
+                "Thông tin hệ thống",
+                JOptionPane.INFORMATION_MESSAGE
+        );
     }
-
     /**
      * Hiển thị lịch sử đăng nhập (TEXT ĐƠN GIẢN)
      */
