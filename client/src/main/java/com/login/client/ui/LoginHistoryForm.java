@@ -207,8 +207,8 @@ public class LoginHistoryForm extends JFrame {
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this,
-                "Loi ket noi database: " + e.getMessage(),
-                "Loi", JOptionPane.ERROR_MESSAGE);
+                "Lỗi kết nối database: " + e.getMessage(),
+                "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
         return logs;
     }
