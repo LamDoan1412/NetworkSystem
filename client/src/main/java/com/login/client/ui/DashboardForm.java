@@ -57,16 +57,16 @@ public class DashboardForm extends JFrame {
         h.setBackground(COLOR_PRIMARY);
         h.setBorder(new EmptyBorder(16, 22, 16, 22));
 
-        // Trai
+        // Trái
         JPanel left = new JPanel(new GridLayout(2, 1, 0, 4));
         left.setOpaque(false);
 
-        JLabel lblHello = new JLabel( " Người dùng: " + loginInfo.getUsername() );
+        JLabel lblHello = new JLabel("Người dùng: " + loginInfo.getUsername());
         lblHello.setFont(new Font("Arial", Font.BOLD, 20));
         lblHello.setForeground(Color.WHITE);
 
         boolean isAdmin = "admin".equalsIgnoreCase(loginInfo.getRole());
-        JLabel lblBadge = new JLabel( "VAI TRÒ:" + ("  " + (isAdmin ? "ADMIN" : "USER") + "  "));
+        JLabel lblBadge = new JLabel("VAI TRÒ: " + (isAdmin ? "ADMIN" : "USER"));
         lblBadge.setFont(new Font("Arial", Font.BOLD, 11));
         lblBadge.setForeground(Color.WHITE);
         lblBadge.setOpaque(true);
@@ -76,7 +76,7 @@ public class DashboardForm extends JFrame {
         left.add(lblHello);
         left.add(lblBadge);
 
-        // Phai: dong ho
+        // Phải: đồng hồ
         lblClock = new JLabel("", SwingConstants.RIGHT);
         lblClock.setFont(new Font("Arial", Font.PLAIN, 12));
         lblClock.setForeground(new Color(200, 230, 255));
@@ -86,7 +86,7 @@ public class DashboardForm extends JFrame {
         return h;
     }
 
-    // ── Noi dung chinh ──────────────────────────────────
+    // ── Nội dung chính ──────────────────────────────────
     private JPanel buildContent() {
         JPanel p = new JPanel(new BorderLayout(0, 14));
         p.setBackground(COLOR_BG);
@@ -104,7 +104,8 @@ public class DashboardForm extends JFrame {
         addCard(row, "TÀI KHOẢN",  loginInfo.getUsername(), COLOR_PRIMARY);
         addCard(row, "QUYỀN HẠN",  loginInfo.getRole().toUpperCase(),
                 isAdmin ? COLOR_PURPLE : COLOR_SUCCESS);
-        addCard(row, "SERVER",     "localhost:9999", new Color(22, 160, 133));
+        addCard(row, "SERVER",     client.getServerHost() + ":" + client.getServerPort(),
+                new Color(22, 160, 133));
         return row;
     }
 
@@ -112,8 +113,8 @@ public class DashboardForm extends JFrame {
         JPanel card = new JPanel(new GridLayout(2, 1, 0, 6));
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(215, 215, 215)),
-            new EmptyBorder(12, 14, 12, 14)
+                BorderFactory.createLineBorder(new Color(215, 215, 215)),
+                new EmptyBorder(12, 14, 12, 14)
         ));
 
         JLabel lbl = new JLabel(label, SwingConstants.CENTER);
@@ -135,20 +136,33 @@ public class DashboardForm extends JFrame {
 
         boolean isAdmin = "admin".equalsIgnoreCase(loginInfo.getRole());
 
+        // Button 1: Thông tin hệ thống (CẦN APPROVAL)
         addBtn(grid, "Thông tin hệ thống", COLOR_PRIMARY,
-               e -> showSystemInfo());
+                e -> requestSystemInfo());
 
+        // Button 2: Lịch sử đăng nhập (CẦN APPROVAL)
         addBtn(grid, "Lịch sử đăng nhập", new Color(22, 160, 133),
-               e -> new LoginHistoryForm().setVisible(true));
+                e -> requestLoginHistory());
 
+        // Button 3: Quản lý người dùng (chỉ Admin)
         JButton btnAdmin = addBtn(grid, "Quản lý người dùng", COLOR_PURPLE,
-               e -> new UserManagementForm().setVisible(true));
+                e -> {
+                    try {
+                        new UserManagementForm().setVisible(true);
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(this,
+                                "Chức năng đang phát triển!",
+                                "Thông báo",
+                                JOptionPane.INFORMATION_MESSAGE);
+                    }
+                });
         if (!isAdmin) {
             btnAdmin.setEnabled(false);
             btnAdmin.setToolTipText("Chỉ Admin mới có quyền này");
             btnAdmin.setBackground(new Color(180, 180, 180));
         }
 
+        // Button 4: Đăng xuất
         addBtn(grid, "Đăng xuất", COLOR_DANGER, e -> logout());
 
         return grid;
@@ -190,26 +204,137 @@ public class DashboardForm extends JFrame {
         return f;
     }
 
-    // ── Chuc nang ───────────────────────────────────────
-    private void showSystemInfo() {
-        String info =
-            "Java version : " + System.getProperty("java.version") + "\n" +
-            "OS           : " + System.getProperty("os.name")      + "\n" +
-            "Server       : localhost:9999\n"                               +
-            "Database     : SQL Server (HOLAD1412\\SQLEXPRESS)\n"           +
-            "Người dùng   : " + loginInfo.getUsername()            + "\n" +
-            "Quyền        : " + loginInfo.getRole()                + "\n" +
-            "Thời gian    : " + LocalDateTime.now()
-                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+    // ── Chức năng APPROVAL ───────────────────────────────────────
 
-        JOptionPane.showMessageDialog(this, info,
-            "Thông tin hệ thống", JOptionPane.INFORMATION_MESSAGE);
+    /**
+     * YÊU CẦU xem thông tin hệ thống (CẦN APPROVAL)
+     */
+    private void requestSystemInfo() {
+        JDialog waitDialog = createWaitDialog("Đang gửi yêu cầu tới Server...\nVui lòng chờ admin chấp nhận.");
+
+        new Thread(() -> {
+            Message response = client.requestSystemInfo();
+
+            SwingUtilities.invokeLater(() -> {
+                waitDialog.dispose();
+
+                if (response.getType() == Message.Type.REQUEST_APPROVED) {
+                    showSystemInfoDialog(response.getMessage());
+                } else if (response.getType() == Message.Type.REQUEST_REJECTED) {
+                    JOptionPane.showMessageDialog(this,
+                            response.getMessage(),
+                            "Bị từ chối",
+                            JOptionPane.WARNING_MESSAGE);
+                }
+            });
+        }).start();
+
+        waitDialog.setVisible(true);
     }
+
+    /**
+     * YÊU CẦU xem lịch sử đăng nhập (CẦN APPROVAL)
+     */
+    private void requestLoginHistory() {
+        JDialog waitDialog = createWaitDialog("Đang gửi yêu cầu tới Server...\nVui lòng chờ admin chấp nhận.");
+
+        new Thread(() -> {
+            Message response = client.requestLoginHistory(50);
+
+            SwingUtilities.invokeLater(() -> {
+                waitDialog.dispose();
+
+                if (response.getType() == Message.Type.REQUEST_APPROVED) {
+                    showLoginHistoryDialog(response.getMessage());
+                } else if (response.getType() == Message.Type.REQUEST_REJECTED) {
+                    JOptionPane.showMessageDialog(this,
+                            response.getMessage(),
+                            "Bị từ chối",
+                            JOptionPane.WARNING_MESSAGE);
+                }
+            });
+        }).start();
+
+        waitDialog.setVisible(true);
+    }
+
+    /**
+     * Tạo dialog chờ
+     */
+    private JDialog createWaitDialog(String message) {
+        JDialog dialog = new JDialog(this, "Đang xử lý...", true);
+        dialog.setLayout(new BorderLayout(10, 10));
+        dialog.setSize(350, 130);
+        dialog.setLocationRelativeTo(this);
+        dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+
+        JLabel lbl = new JLabel("<html><center>" + message.replace("\n", "<br>") + "</center></html>");
+        lbl.setFont(new Font("Arial", Font.PLAIN, 12));
+        lbl.setBorder(new EmptyBorder(15, 15, 10, 15));
+
+        JProgressBar bar = new JProgressBar();
+        bar.setIndeterminate(true);
+
+        dialog.add(lbl, BorderLayout.CENTER);
+        dialog.add(bar, BorderLayout.SOUTH);
+
+        return dialog;
+    }
+
+    /**
+     * Hiển thị thông tin hệ thống NGẮN GỌN
+     */
+    private void showSystemInfoDialog(String data) {
+        // Lọc chỉ lấy thông tin quan trọng
+        StringBuilder info = new StringBuilder();
+        info.append("=== THÔNG TIN HỆ THỐNG ===\n\n");
+
+        for (String line : data.split("\n")) {
+            if (line.contains("Java Version:") ||
+                    line.contains("OS:") ||
+                    line.contains("Max Memory:") ||
+                    line.contains("Used Memory:") ||
+                    line.contains("Available Processors:")) {
+                info.append(line.trim()).append("\n");
+            }
+        }
+
+        JTextArea textArea = new JTextArea(info.toString());
+        textArea.setEditable(false);
+        textArea.setFont(new Font("Arial", Font.PLAIN, 13));
+        textArea.setBackground(new Color(245, 245, 245));
+        textArea.setBorder(new EmptyBorder(12, 12, 12, 12));
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(420, 220));
+
+        JOptionPane.showMessageDialog(this, scrollPane,
+                "Thông tin hệ thống", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /**
+     * Hiển thị lịch sử đăng nhập (TEXT ĐƠN GIẢN)
+     */
+    private void showLoginHistoryDialog(String data) {
+        JTextArea textArea = new JTextArea(data);
+        textArea.setEditable(false);
+        textArea.setFont(new Font("Consolas", Font.PLAIN, 12));
+        textArea.setBackground(new Color(245, 245, 245));
+        textArea.setBorder(new EmptyBorder(12, 12, 12, 12));
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(680, 400));
+
+        JOptionPane.showMessageDialog(this, scrollPane,
+                "Lịch sử đăng nhập", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    // ── Các chức năng khác ───────────────────────────────
 
     private void logout() {
         int ok = JOptionPane.showConfirmDialog(this,
-            "Bạn có muốn đăng xuất?", "Xác nhận ",
-            JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                "Bạn có muốn đăng xuất?", "Xác nhận",
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (ok == JOptionPane.YES_OPTION) {
             client.disconnect();
             dispose();
@@ -219,8 +344,8 @@ public class DashboardForm extends JFrame {
 
     private void startClock() {
         Timer t = new Timer(1000, e ->
-            lblClock.setText(LocalDateTime.now()
-                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy   HH:mm:ss")))
+                lblClock.setText(LocalDateTime.now()
+                        .format(DateTimeFormatter.ofPattern("dd/MM/yyyy   HH:mm:ss")))
         );
         t.start();
         t.getActionListeners()[0].actionPerformed(null);

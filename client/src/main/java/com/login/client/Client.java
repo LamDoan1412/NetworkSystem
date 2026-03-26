@@ -1,137 +1,174 @@
 package com.login.client;
 
 import com.login.common.Message;
-
 import java.io.*;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.util.Properties;
 
 /**
- * Lớp Client quản lý kết nối TCP tới Server.
- * Đóng gói toàn bộ logic giao tiếp socket.
- *
- * Cách dùng:
- *   Client client = new Client();
- *   if (client.connect()) {
- *       Message result = client.login("admin", "Admin@123");
- *       client.disconnect();
- *   }
+ * Client kết nối tới Server
  */
 public class Client {
 
-    private String host;
-    private int port;
-    private int timeout;
-
+    private String serverHost;
+    private int serverPort;
     private Socket socket;
     private ObjectOutputStream outputStream;
     private ObjectInputStream inputStream;
-
-    private boolean connected = false;
+    private String currentUsername; // Lưu username sau khi login thành công
 
     public Client() {
         loadConfig();
     }
 
+    /**
+     * Đọc cấu hình từ client.properties
+     */
     private void loadConfig() {
-        Properties props = new Properties();
-        try (InputStream is = getClass().getClassLoader()
-                                        .getResourceAsStream("client.properties")) {
-            if (is != null) {
-                props.load(is);
-            }
-        } catch (IOException e) {
-            System.err.println("[CLIENT] Không đọc được client.properties, dùng mặc định.");
-        }
+        try (InputStream input = getClass().getClassLoader()
+                .getResourceAsStream("client.properties")) {
 
-        this.host    = props.getProperty("server.host", "localhost");
-        this.port    = Integer.parseInt(props.getProperty("server.port", "9999"));
-        this.timeout = Integer.parseInt(props.getProperty("connection.timeout", "5000"));
+            Properties prop = new Properties();
+            if (input != null) {
+                prop.load(input);
+                serverHost = prop.getProperty("server.host", "localhost");
+                serverPort = Integer.parseInt(prop.getProperty("server.port", "9999"));
+            } else {
+                serverHost = "localhost";
+                serverPort = 9999;
+            }
+
+        } catch (Exception e) {
+            serverHost = "localhost";
+            serverPort = 9999;
+        }
     }
 
     /**
-     * Kết nối tới server
-     * @return true nếu kết nối thành công
+     * Kết nối tới Server
      */
     public boolean connect() {
         try {
-            socket = new Socket(host, port);
-            socket.setSoTimeout(timeout);
-
-            // QUAN TRỌNG: Output TRƯỚC Input (tránh deadlock)
+            socket = new Socket(serverHost, serverPort);
             outputStream = new ObjectOutputStream(socket.getOutputStream());
-            inputStream  = new ObjectInputStream(socket.getInputStream());
-
-            connected = true;
-            System.out.println("[CLIENT] Ket noi thanh cong toi " + host + ":" + port);
+            inputStream = new ObjectInputStream(socket.getInputStream());
             return true;
-
-        } catch (SocketTimeoutException e) {
-            System.err.println("[CLIENT] Timeout: Server khong phan hoi.");
-        } catch (IOException e) {
-            System.err.println("[CLIENT] Khong the ket noi server: " + e.getMessage());
-            System.err.println("[CLIENT] Hay kiem tra server dang chay chua?");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     /**
-     * Gửi yêu cầu đăng nhập
-     * @return Message phản hồi từ server
+     * Đăng nhập
      */
     public Message login(String username, String password) {
-        if (!connected) {
-            return Message.createLoginFailed("Chua ket noi toi server!");
-        }
-
         try {
-            // Gửi request
             Message request = Message.createLoginRequest(username, password);
             outputStream.writeObject(request);
             outputStream.flush();
 
-            // Đợi phản hồi
             Message response = (Message) inputStream.readObject();
+
+            // Lưu username nếu đăng nhập thành công
+            if (response.getType() == Message.Type.LOGIN_SUCCESS) {
+                this.currentUsername = username;
+            }
+
             return response;
 
-        } catch (SocketTimeoutException e) {
-            return Message.createLoginFailed("Server khong phan hoi (timeout).");
-        } catch (IOException | ClassNotFoundException e) {
-            connected = false;
+        } catch (Exception e) {
+            e.printStackTrace();
             return Message.createLoginFailed("Loi ket noi: " + e.getMessage());
         }
     }
 
     /**
-     * Gửi yêu cầu đăng xuất và đóng kết nối
+     * YÊU CẦU xem thông tin hệ thống
+     * (Cần approval từ admin server)
      */
-    public void disconnect() {
-        if (!connected) return;
-
+    public Message requestSystemInfo() {
+        Socket tempSocket = null;
         try {
-            // Gửi thông báo logout trước khi đóng
-            Message logout = new Message(Message.Type.LOGOUT);
-            outputStream.writeObject(logout);
-            outputStream.flush();
-        } catch (IOException ignored) {}
+            // Tạo kết nối mới
+            tempSocket = new Socket(serverHost, serverPort);
+            ObjectOutputStream out = new ObjectOutputStream(tempSocket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(tempSocket.getInputStream());
 
-        closeConnection();
-    }
+            // Gửi request
+            Message request = Message.createGetSystemInfoRequest(currentUsername);
+            out.writeObject(request);
+            out.flush();
 
-    private void closeConnection() {
-        connected = false;
-        try {
-            if (inputStream != null) inputStream.close();
-            if (outputStream != null) outputStream.close();
-            if (socket != null && !socket.isClosed()) socket.close();
-            System.out.println("[CLIENT] Da ngat ket noi.");
-        } catch (IOException e) {
-            System.err.println("[CLIENT] Loi dong ket noi: " + e.getMessage());
+            // Chờ response (admin phải approve)
+            Message response = (Message) in.readObject();
+
+            return response;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Message.createRequestRejected("Loi ket noi: " + e.getMessage());
+        } finally {
+            try {
+                if (tempSocket != null) tempSocket.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    public boolean isConnected() { return connected; }
-    public String getHost() { return host; }
-    public int getPort() { return port; }
+    /**
+     * YÊU CẦU xem lịch sử đăng nhập
+     * (Cần approval từ admin server)
+     */
+    public Message requestLoginHistory(int limit) {
+        Socket tempSocket = null;
+        try {
+            // Tạo kết nối mới
+            tempSocket = new Socket(serverHost, serverPort);
+            ObjectOutputStream out = new ObjectOutputStream(tempSocket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(tempSocket.getInputStream());
+
+            // Gửi request
+            Message request = Message.createGetLogsRequest(currentUsername, limit);
+            out.writeObject(request);
+            out.flush();
+
+            // Chờ response (admin phải approve)
+            Message response = (Message) in.readObject();
+
+            return response;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Message.createRequestRejected("Loi ket noi: " + e.getMessage());
+        } finally {
+            try {
+                if (tempSocket != null) tempSocket.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Ngắt kết nối
+     */
+    public void disconnect() {
+        try {
+            if (socket != null && !socket.isClosed()) {
+                socket.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getServerHost() {
+        return serverHost;
+    }
+
+    public int getServerPort() {
+        return serverPort;
+    }
 }

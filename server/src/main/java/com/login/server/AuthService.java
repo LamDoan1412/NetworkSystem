@@ -42,10 +42,10 @@ public class AuthService {
         int failedCount = UserDAO.countRecentFailedLogins(username);
         if (failedCount >= MAX_FAILED_ATTEMPTS) {
             System.out.printf("[AUTH] Brute-force detected: %s từ %s (%d lần)%n",
-                              username, clientIP, failedCount);
+                    username, clientIP, failedCount);
             UserDAO.insertLoginLog(username, clientIP, "BLOCKED");
             return Message.createLoginFailed(
-                "Quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau 10 phút."
+                    "Quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau 10 phút."
             );
         }
 
@@ -56,7 +56,7 @@ public class AuthService {
             // Username không tồn tại - ghi log và báo lỗi chung chung (bảo mật hơn)
             UserDAO.insertLoginLog(username, clientIP, "FAILED");
             System.out.printf("[AUTH] FAILED: Username '%s' không tồn tại (IP: %s)%n",
-                              username, clientIP);
+                    username, clientIP);
             return Message.createLoginFailed("Username hoặc mật khẩu không đúng!");
         }
 
@@ -68,8 +68,10 @@ public class AuthService {
         if (!isActive) {
             UserDAO.insertLoginLog(username, clientIP, "LOCKED");
             System.out.printf("[AUTH] LOCKED: Tài khoản '%s' bị khóa (IP: %s)%n",
-                              username, clientIP);
-            return Message.createLoginLocked();
+                    username, clientIP);
+
+            // ✅ ĐÃ SỬA: THÊM THAM SỐ
+            return Message.createLoginLocked("Tài khoản đã bị khóa. Vui lòng liên hệ admin để mở khóa.");
         }
 
         // ── Bước 5: Kiểm tra mật khẩu bằng BCrypt ──
@@ -78,7 +80,7 @@ public class AuthService {
         if (!passwordMatch) {
             UserDAO.insertLoginLog(username, clientIP, "FAILED");
             System.out.printf("[AUTH] FAILED: Sai mật khẩu cho '%s' (IP: %s)%n",
-                              username, clientIP);
+                    username, clientIP);
             return Message.createLoginFailed("Username hoặc mật khẩu không đúng!");
         }
 

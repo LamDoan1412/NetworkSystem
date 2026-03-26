@@ -50,7 +50,7 @@ public class LoginForm extends JFrame {
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(Color.WHITE);
 
-        // ── Header ──
+        // Header
         JPanel header = new JPanel(new GridLayout(3, 1, 0, 2));
         header.setBackground(COLOR_PRIMARY);
         header.setBorder(new EmptyBorder(18, 20, 15, 20));
@@ -70,7 +70,7 @@ public class LoginForm extends JFrame {
         header.add(title);
         header.add(lblConnectionStatus);
 
-        // ── Form ──
+        // Form
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(Color.WHITE);
         form.setBorder(new EmptyBorder(20, 35, 15, 35));
@@ -80,25 +80,23 @@ public class LoginForm extends JFrame {
         g.weightx = 1.0;
         g.gridx = 0;
 
-        // Username label
+        // Username
         g.gridy = 0; g.insets = new Insets(0, 0, 4, 0);
         JLabel lUser = new JLabel("Tên đăng nhập:");
         lUser.setFont(new Font("Arial", Font.BOLD, 13));
         form.add(lUser, g);
 
-        // Username field
         g.gridy = 1; g.insets = new Insets(0, 0, 12, 0);
         txtUsername = new JTextField();
         styleField(txtUsername);
         form.add(txtUsername, g);
 
-        // Password label
+        // Password
         g.gridy = 2; g.insets = new Insets(0, 0, 4, 0);
         JLabel lPass = new JLabel("Mật khẩu:");
         lPass.setFont(new Font("Arial", Font.BOLD, 13));
         form.add(lPass, g);
 
-        // Password field
         g.gridy = 3; g.insets = new Insets(0, 0, 6, 0);
         txtPassword = new JPasswordField();
         txtPassword.setEchoChar('\u25CF');
@@ -106,7 +104,7 @@ public class LoginForm extends JFrame {
         txtPassword.addActionListener(e -> performLogin());
         form.add(txtPassword, g);
 
-        // Checkbox hien mat khau
+        // Checkbox
         g.gridy = 4; g.insets = new Insets(0, 0, 14, 0);
         JCheckBox chk = new JCheckBox("Hiện mật khẩu");
         chk.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -114,7 +112,7 @@ public class LoginForm extends JFrame {
         chk.addActionListener(e -> txtPassword.setEchoChar(chk.isSelected() ? '\0' : '\u25CF'));
         form.add(chk, g);
 
-        // Nut dang nhap
+        // Button
         g.gridy = 5; g.insets = new Insets(0, 0, 8, 0);
         btnLogin = new JButton("ĐĂNG NHẬP");
         btnLogin.setBackground(COLOR_PRIMARY);
@@ -125,13 +123,9 @@ public class LoginForm extends JFrame {
         btnLogin.setPreferredSize(new Dimension(0, 40));
         btnLogin.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnLogin.addActionListener(e -> performLogin());
-        btnLogin.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { if(btnLogin.isEnabled()) btnLogin.setBackground(COLOR_PRIMARY.darker()); }
-            public void mouseExited(MouseEvent e)  { btnLogin.setBackground(COLOR_PRIMARY); }
-        });
         form.add(btnLogin, g);
 
-        // Label trang thai
+        // Status
         g.gridy = 6; g.insets = new Insets(0, 0, 0, 0);
         lblStatus = new JLabel(" ", SwingConstants.CENTER);
         lblStatus.setFont(new Font("Arial", Font.BOLD, 12));
@@ -141,7 +135,7 @@ public class LoginForm extends JFrame {
         lblStatus.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
         form.add(lblStatus, g);
 
-        // ── Footer ──
+        // Footer
         JPanel footer = new JPanel();
         footer.setBackground(new Color(248, 248, 248));
         footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(220, 220, 220)));
@@ -171,7 +165,7 @@ public class LoginForm extends JFrame {
             boolean ok = client.connect();
             SwingUtilities.invokeLater(() -> {
                 if (ok) {
-                    lblConnectionStatus.setText("\u2713 Đã kết nối: " + client.getHost() + ":" + client.getPort());
+                    lblConnectionStatus.setText("\u2713 Đã kết nối: " + client.getServerHost() + ":" + client.getServerPort());
                     lblConnectionStatus.setForeground(new Color(150, 255, 150));
                     btnLogin.setEnabled(true);
                 } else {
@@ -186,8 +180,16 @@ public class LoginForm extends JFrame {
         String user = txtUsername.getText().trim();
         String pass = new String(txtPassword.getPassword());
 
-        if (user.isEmpty()) { showStatus("Vui long nhap ten dang nhap!", COLOR_WARNING); txtUsername.requestFocus(); return; }
-        if (pass.isEmpty()) { showStatus("Vui long nhap mat khau!", COLOR_WARNING); txtPassword.requestFocus(); return; }
+        if (user.isEmpty()) {
+            showStatus("Vui long nhap ten dang nhap!", COLOR_WARNING);
+            txtUsername.requestFocus();
+            return;
+        }
+        if (pass.isEmpty()) {
+            showStatus("Vui long nhap mat khau!", COLOR_WARNING);
+            txtPassword.requestFocus();
+            return;
+        }
 
         setFormEnabled(false);
         showStatus("Dang xac thuc...", COLOR_PRIMARY);
@@ -207,19 +209,24 @@ public class LoginForm extends JFrame {
                     new DashboardForm(res, client).setVisible(true);
                     dispose();
                 });
-                t.setRepeats(false); t.start();
+                t.setRepeats(false);
+                t.start();
                 break;
+
             case LOGIN_FAILED:
                 showStatus("\u2717 " + res.getMessage(), COLOR_ERROR);
-                txtPassword.setText(""); txtPassword.requestFocus();
+                txtPassword.setText("");
+                txtPassword.requestFocus();
                 shake();
                 break;
+
             case LOGIN_LOCKED:
                 showStatus("\uD83D\uDD12 " + res.getMessage(), COLOR_ERROR);
                 setFormEnabled(false);
                 break;
+
             default:
-                showStatus("Phản hồi không xác định !", COLOR_WARNING);
+                showStatus("Phản hồi không xác định!", COLOR_WARNING);
         }
     }
 
@@ -232,7 +239,7 @@ public class LoginForm extends JFrame {
     private void setFormEnabled(boolean en) {
         txtUsername.setEnabled(en);
         txtPassword.setEnabled(en);
-        btnLogin.setEnabled(en && client.isConnected());
+        btnLogin.setEnabled(en);
     }
 
     private void shake() {
@@ -242,7 +249,10 @@ public class LoginForm extends JFrame {
         int[] i = {0};
         t.addActionListener(e -> {
             setLocation(o.x + moves[i[0]], o.y);
-            if (++i[0] >= moves.length) { setLocation(o); t.stop(); }
+            if (++i[0] >= moves.length) {
+                setLocation(o);
+                t.stop();
+            }
         });
         t.start();
     }

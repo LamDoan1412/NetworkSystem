@@ -1,114 +1,87 @@
 package com.login.server;
 
 import com.login.server.db.DBConnection;
-
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Lớp Server chính.
- * - Mở ServerSocket lắng nghe kết nối từ client
- * - Dùng ThreadPool để xử lý nhiều client cùng lúc
- * - Mỗi client được xử lý bởi 1 ClientHandler trong Thread riêng
+ * Server lắng nghe kết nối từ Client
  */
 public class Server {
 
-    private final int port;
     private ServerSocket serverSocket;
+    private ExecutorService threadPool;
+    private boolean running = false;
+    private ServerGUI gui; // Giao diện server (có thể null)
 
-    // ThreadPool: tối đa 50 client cùng lúc, tự scale down khi rảnh
-    private final ExecutorService threadPool = Executors.newFixedThreadPool(50);
-
-    private volatile boolean running = false;
-
+    // Constructor cho console mode (không có GUI)
     public Server() {
-        this.port = loadPort();
+        this.gui = null;
     }
 
-    private int loadPort() {
-        Properties props = new Properties();
-        try (InputStream is = getClass().getClassLoader()
-                                        .getResourceAsStream("config.properties")) {
-            if (is != null) {
-                props.load(is);
-                return Integer.parseInt(props.getProperty("server.port", "9999"));
-            }
-        } catch (Exception e) {
-            System.err.println("[SERVER] Khong đoc đuoc port, dung mac đinh 9999");
-        }
-        return 9999;
+    // Constructor cho GUI mode
+    public Server(ServerGUI gui) {
+        this.gui = gui;
     }
 
-    /**
-     * Khởi động server:
-     * 1. Kiểm tra DB
-     * 2. Mở ServerSocket
-     * 3. Vòng lặp chấp nhận client
-     */
     public void start() {
-        System.out.println("=".repeat(50));
-        System.out.println("   NETWORK LOGIN SYSTEM - SERVER");
-        System.out.println("=".repeat(50));
-
-        // Bước 1: Kiểm tra kết nối DB trước khi mở cổng
-        if (!DBConnection.testConnection()) {
-            System.err.println("[SERVER] Khong the ket noi DB → Server dung lai!");
-            return;
-        }
-
-        // Bước 2: Mở ServerSocket
         try {
-            serverSocket = new ServerSocket(port);
+            // Test kết nối database
+            if (!DBConnection.testConnection()) {
+                log("[ERROR] Khong the ket noi database!");
+                return;
+            }
+
+            serverSocket = new ServerSocket(9999);
+            threadPool = Executors.newFixedThreadPool(50);
             running = true;
-            System.out.println("[SERVER] Dang lang nghe tai port " + port + " ...");
-            System.out.println("[SERVER] Nhan Ctrl+C de dung server.");
-            System.out.println("-".repeat(50));
 
-            // Bước 3: Vòng lặp chấp nhận client
-            acceptClients();
+            log("[SERVER] Dang lang nghe tai port 9999...");
+            log("[SERVER] ThreadPool: 50 threads");
 
-        } catch (IOException e) {
-            System.err.println("[SERVER] Khong the mo port " + port + ": " + e.getMessage());
-        } finally {
-            stop();
-        }
-    }
-
-    /**
-     * Vòng lặp vô hạn chờ và chấp nhận kết nối client
-     */
-    private void acceptClients() {
-        while (running) {
-            try {
+            while (running) {
                 Socket clientSocket = serverSocket.accept();
-                // Giao cho ThreadPool xử lý, không block vòng lặp chính
-                threadPool.execute(new ClientHandler(clientSocket));
-            } catch (IOException e) {
-                if (running) {
-                    System.err.println("[SERVER] Loi chap nhan ket noi: " + e.getMessage());
-                }
+                String clientIP = clientSocket.getInetAddress().getHostAddress();
+
+                log("[CONNECT] Client ket noi: " + clientIP);
+
+                // Truyền GUI vào ClientHandler
+                threadPool.execute(new ClientHandler(clientSocket, clientIP, gui));
+            }
+
+        } catch (Exception e) {
+            if (running) {
+                log("[ERROR] " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }
 
-    /**
-     * Dừng server an toàn
-     */
     public void stop() {
         running = false;
-        threadPool.shutdown();
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
             }
-        } catch (IOException e) {
-            System.err.println("[SERVER] Loi dong server: " + e.getMessage());
+            if (threadPool != null) {
+                threadPool.shutdown();
+            }
+            log("[SERVER] Da dung thanh cong");
+        } catch (Exception e) {
+            log("[ERROR] Loi khi dung server: " + e.getMessage());
         }
-        System.out.println("[SERVER] Server dừng lai.");
+    }
+
+    /**
+     * Ghi log (console hoặc GUI)
+     */
+    private void log(String message) {
+        if (gui != null) {
+            gui.log(message);
+        } else {
+            System.out.println(message);
+        }
     }
 }
