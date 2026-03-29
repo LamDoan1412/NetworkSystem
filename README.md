@@ -113,6 +113,14 @@ String password = "your_password";
 
 ---
 
+
+## ⚙️ Kiến trúc hệ thống
+
+Client (Swing UI) ---> Socket TCP ---> Server (Business Logic) ---> SQL Server (Database)
+
+---
+
+
 ### 🔹 5. Chạy chương trình
 
 - Run Server trước  
