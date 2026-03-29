@@ -4,6 +4,8 @@ import com.login.common.Message;
 import com.login.server.db.UserDAO;
 import java.io.*;
 import java.net.Socket;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -92,19 +94,19 @@ public class ClientHandler implements Runnable {
      */
     private Message handleSystemInfoRequest(Message request) {
         String username = request.getUsername();
-        log("[REQUEST] " + username + " muon xem thong tin he thong");
+        log("[REQUEST] " + username + " muốn xem thông tin hệ thống");
 
         // Nếu không có GUI → tự động approve
         if (gui == null) {
             log("[AUTO-APPROVED] Khong co GUI, tu dong chap nhan");
-            String info = getSystemInfo();
+            String info = getSystemInfo(username, "Unknown");
             return Message.createRequestApproved(info);
         }
 
         // Hiện popup xin phép admin
         CompletableFuture<Boolean> approval = gui.showApprovalDialog(
                 username,
-                "xem thong tin he thong"
+                "xem thông tin đăng nhập"
         );
 
         try {
@@ -112,11 +114,15 @@ public class ClientHandler implements Runnable {
             boolean approved = approval.get();
 
             if (approved) {
-                String info = getSystemInfo();
+                // Lấy role từ database
+                String[] userData = com.login.server.db.UserDAO.findUser(username);
+                String role = userData != null ? userData[1] : "Unknown";
+
+                String info = getSystemInfo(username, role);
                 return Message.createRequestApproved(info);
             } else {
                 return Message.createRequestRejected(
-                        "Admin da tu choi yeu cau cua ban"
+                        "Server đã từ chối yêu cầu của bạn"
                 );
             }
 
@@ -133,7 +139,7 @@ public class ClientHandler implements Runnable {
         String username = request.getUsername();
         int limit = Integer.parseInt(request.getMessage());
 
-        log("[REQUEST] " + username + " muon xem lich su dang nhap (limit=" + limit + ")");
+        log("[REQUEST] " + username + " muốn xem lichj sử đăng nhập (limit=" + limit + ")");
 
         // Nếu không có GUI → tự động approve
         if (gui == null) {
@@ -145,7 +151,7 @@ public class ClientHandler implements Runnable {
         // Hiện popup xin phép admin
         CompletableFuture<Boolean> approval = gui.showApprovalDialog(
                 username,
-                "xem lich su dang nhap (top " + limit + ")"
+                "xem lịch sử đăng nhập "
         );
 
         try {
@@ -157,7 +163,7 @@ public class ClientHandler implements Runnable {
                 return Message.createRequestApproved(logsData);
             } else {
                 return Message.createRequestRejected(
-                        "Admin da tu choi yeu cau cua ban"
+                        "Server đã từ chối yêu cầu của bạn"
                 );
             }
 
@@ -168,51 +174,20 @@ public class ClientHandler implements Runnable {
     }
 
     /**
-     * Lấy thông tin hệ thống
+     * Lấy thông tin hệ thống (FORMAT NGẮN GỌN)
      */
-    private String getSystemInfo() {
-        StringBuilder info = new StringBuilder();
-        info.append("========== THONG TIN HE THONG ==========\n\n");
+    private String getSystemInfo(String username, String role) {
+        String info =
+                "Java version : " + System.getProperty("java.version") + "\n" +
+                        "OS           : " + System.getProperty("os.name")      + "\n" +
+                        "SERVER       : localhost:9999\n"                               +
+                        "DATABASE     : SQL Server (HOLAD1412\\SQLEXPRESS)\n"           +
+                        "NGƯỜI DÙNG   : " + username                           + "\n" +
+                        "QUYỀN        : " + role                               + "\n" +
+                        "THỜI GIAN    : " + LocalDateTime.now()
+                        .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
 
-        // Java info
-        info.append("[JAVA]\n");
-        info.append("  Version: ").append(System.getProperty("java.version")).append("\n");
-        info.append("  Vendor: ").append(System.getProperty("java.vendor")).append("\n");
-        info.append("  Home: ").append(System.getProperty("java.home")).append("\n\n");
-
-        // OS info
-        info.append("[OPERATING SYSTEM]\n");
-        info.append("  Name: ").append(System.getProperty("os.name")).append("\n");
-        info.append("  Version: ").append(System.getProperty("os.version")).append("\n");
-        info.append("  Architecture: ").append(System.getProperty("os.arch")).append("\n\n");
-
-        // Memory info
-        Runtime runtime = Runtime.getRuntime();
-        long maxMemory = runtime.maxMemory() / 1024 / 1024;
-        long totalMemory = runtime.totalMemory() / 1024 / 1024;
-        long freeMemory = runtime.freeMemory() / 1024 / 1024;
-        long usedMemory = totalMemory - freeMemory;
-
-        info.append("[MEMORY]\n");
-        info.append("  Max Memory: ").append(maxMemory).append(" MB\n");
-        info.append("  Total Memory: ").append(totalMemory).append(" MB\n");
-        info.append("  Free Memory: ").append(freeMemory).append(" MB\n");
-        info.append("  Used Memory: ").append(usedMemory).append(" MB\n");
-        info.append("  Usage: ").append((usedMemory * 100 / maxMemory)).append("%\n\n");
-
-        // CPU info
-        info.append("[CPU]\n");
-        info.append("  Available Processors: ").append(runtime.availableProcessors()).append("\n\n");
-
-        // User info
-        info.append("[USER]\n");
-        info.append("  User Name: ").append(System.getProperty("user.name")).append("\n");
-        info.append("  User Home: ").append(System.getProperty("user.home")).append("\n");
-        info.append("  User Dir: ").append(System.getProperty("user.dir")).append("\n\n");
-
-        info.append("==========================================");
-
-        return info.toString();
+        return info;
     }
 
     /**
@@ -223,9 +198,9 @@ public class ClientHandler implements Runnable {
             List<String[]> logs = UserDAO.getLoginHistory(limit);
 
             StringBuilder data = new StringBuilder();
-            data.append("========== LICH SU DANG NHAP ==========\n\n");
+            data.append("========== LỊCH SỬ ĐĂNG NHẬP ==========\n\n");
             data.append(String.format("%-5s %-15s %-20s %-15s %-10s\n",
-                    "STT", "USERNAME", "THOI GIAN", "IP ADDRESS", "TRANG THAI"));
+                    "STT", "USERNAME", "THỜI GIAN", "IP ADDRESS", "TRANG THAI"));
             data.append("-------------------------------------------------------------------\n");
 
             int index = 1;

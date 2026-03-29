@@ -20,7 +20,7 @@ public class UserManagementForm extends JFrame {
 
     private static final Color COLOR_PRIMARY = new Color(41, 128, 185);
     private static final Color COLOR_SUCCESS = new Color(39, 174, 96);
-    private static final Color COLOR_DANGER  = new Color(192, 57, 43);
+    private static final Color COLOR_DANGER  = new Color(185, 12, 234);
     private static final Color COLOR_WARNING = new Color(230, 126, 34);
 
     // Cấu hình DB - kết nối trực tiếp port 1433

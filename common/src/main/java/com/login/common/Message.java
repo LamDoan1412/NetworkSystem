@@ -52,7 +52,7 @@ public class Message implements Serializable {
         Message msg = new Message(Type.LOGIN_SUCCESS);
         msg.username = username;
         msg.role = role;
-        msg.message = "Dang nhap thanh cong! Xin chao " + username + " [" + role + "]";
+        msg.message = "Đăng nhập thành công " + username + " [" + role + "]";
         return msg;
     }
 

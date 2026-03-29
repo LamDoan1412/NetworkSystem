@@ -210,7 +210,7 @@ public class DashboardForm extends JFrame {
      * YÊU CẦU xem thông tin hệ thống (CẦN APPROVAL)
      */
     private void requestSystemInfo() {
-        JDialog waitDialog = createWaitDialog("Đang gửi yêu cầu tới Server...\nVui lòng chờ admin chấp nhận.");
+        JDialog waitDialog = createWaitDialog("Đang gửi yêu cầu tới Server...\nVui lòng chờ server chấp nhận.");
 
         new Thread(() -> {
             try {
@@ -258,7 +258,7 @@ public class DashboardForm extends JFrame {
      * YÊU CẦU xem lịch sử đăng nhập (CẦN APPROVAL)
      */
     private void requestLoginHistory() {
-        JDialog waitDialog = createWaitDialog("Đang gửi yêu cầu tới Server...\nVui lòng chờ admin chấp nhận.");
+        JDialog waitDialog = createWaitDialog("Đang gửi yêu cầu tới Server...\nVui lòng chờ server chấp nhận.");
 
         new Thread(() -> {
             Message response = client.requestLoginHistory(50);
